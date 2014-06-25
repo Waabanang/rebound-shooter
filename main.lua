@@ -66,18 +66,24 @@ function love.update(dt)
       ship.death = true
       ship.tod = love.timer.getTime()
     end
-  elseif ship.death and ship.tod <= love.timer.getTime() - 3 then
-    for i,v in ipairs(enemies) do
-      table.remove(enemies, i)
-      enemies = {}
-    end
-    for i,v in ipairs(bullets) do
-      table.remove(bullets)
-      bullets = {}
-      bullets.fuck = "fuck"
-    end
-    love.load()
-    cTime = love.timer.getTIme() - sTime
+  end
+  if ship.death and ship.tod <= love.timer.getTime() - 2 then
+    ship = {} -- everying about our ship
+    ship.bullets = {} --stores bullets stolen
+    ship.bullets.dummy = "dummy" --dummy varible so that the table is populated
+    ship.shots = {}
+    ship.shape =  collider:addPolygon(400, 500, 390, 530, 410, 530)--creates our triangular ship
+    ship.speed = 250 --ship speed
+    ship.charge = 200 --starting charge
+    ship.hp = 200 --starting health
+    ship.shield = {} --holds all information about our shield
+    ship.shield.isVisible = true --holds wheather or not our shield should be visible
+    ship.shield.shape = collider:addCircle(400, 515, 30) --creates the shield, it's always there
+    ship.death = false
+    collider:addToGroup(ship, ship.shape, ship.shield.shape) --shield doesn't collide with ship
+    ship.x, ship.y = ship.shape:center()--needs to be assigned here, so that they update as the ship moves
+    sTime = love.timer.getTime()
+    cTime = love.timer.getTime() - sTime
   end
  
 --world borders
@@ -157,10 +163,10 @@ function love.keypressed(key)
 end
 function on_collide(dt, shape_a, shape_b) --collision callback
   for i,v in ipairs(bullets) do --all bullet collisions
-    if shape_a == v.shape and shape_b == ship.shape then --when a bullet and the ship collide
+    if not ship.death and shape_a == v.shape and shape_b == ship.shape then --when a bullet and the ship collide
       ship.hp = ship.hp - v.damage --bullet reduces health by damage amount
       table.remove(bullets, i) --remove the bullet
-    elseif shape_b == v.shape and shape_a == ship.shape then --same, just repeated in case of other
+    elseif not ship.death and shape_b == v.shape and shape_a == ship.shape then --same, just repeated in case of other
       ship.hp = ship.hp - v.damage
       table.remove(bullets, i)
     end
@@ -181,7 +187,7 @@ function on_collide(dt, shape_a, shape_b) --collision callback
       if not ship.death and shape_a == v.shape and shape_b == ve.shape then --when a bullet and the ship collide
         ve.hp = ve.hp - v.damage --bullet reduces health by damage amount
         table.remove(ship.shots, i) --remove the bullet
-      elseif shape_b == v.shape and shape_a == ve.shape then --same, just repeated in case of other
+      elseif not ship.death and shape_b == v.shape and shape_a == ve.shape then --same, just repeated in case of other
       ve.hp = ve.hp - v.damage
       table.remove(ship.shots, i)
       end
@@ -192,7 +198,7 @@ function love.draw()
   if not ship.death then
     love.graphics.setColor(0, 255, 200)--ship and shield color, cyan
     if ship.shield.isVisible then --only draws the ship when visible is true
-     ship.shield.shape:draw('line') 
+      ship.shield.shape:draw('line') 
     end
     ship.shape:draw('fill')
     for i,v in ipairs(ship.bullets) do --draws all stolen shots
@@ -228,21 +234,21 @@ function createBullet(startX, startY, size, speed, damage) --shoot function, fiv
 end
 function moveEnemy(shape, dir, speed, dt)
   if dir == "l" then
-   shape:move(-speed*dt, 0)
+    shape:move(-speed*dt, 0)
   elseif dir == "r" then
-   shape:move(speed*dt, 0)
+    shape:move(speed*dt, 0)
   elseif dir == "d" then
-   shape:move(0, speed*dt)
+    shape:move(0, speed*dt)
   elseif dir == "u" then
-   shapeLmove(0, -speed*dt)
+    shapeLmove(0, -speed*dt)
   elseif dir == "dr" then
-   shape:move(speed*dt, speed*dt)
+    shape:move(speed*dt, speed*dt)
   elseif dir == "dl" then
-   shape:move(-speed*dt, speed*dt)
+    shape:move(-speed*dt, speed*dt)
   elseif dir == "ur" then
-   shape:move(speed*dt, -speed*dt)
+    shape:move(speed*dt, -speed*dt)
   elseif dir == "dl" then
-   shape:move(-speed*dt, -speed*dt)
+    shape:move(-speed*dt, -speed*dt)
   end
 end
 function spawnEnemySquare(x, y)
