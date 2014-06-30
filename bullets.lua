@@ -13,18 +13,25 @@ end
 function drawBullets()
   love.graphics.setColor(255, 255, 255)--white bullets
   for i,v in ipairs(bullets) do --draws all bullets
+    if v.type == "unblock" then
+      love.graphics.setColor(255, 0, 0)
+    else
+      love.graphics.setColor(255, 255, 255)
+    end
     v.shape:draw("fill")
   end
+  love.graphics.setColor(255, 255, 255)--white bullets
   for i,v in ipairs(ship.shots) do --draws all bullets shot by ship
     v.shape:draw("fill")
   end
 end
-function createBullet(startX, startY, size, speed, damage) --shoot function, five varibles
+function createBullet(startX, startY, size, speed, damage, typeB) --shoot function, five varibles
   local bullet = {}
   bullet.time = love.timer.getTime() --records how long the bullet has been around
   bullet.shape = collider:addCircle(startX, startY, size) --creates the bullets shape
   bullet.damage = damage --how much damage that bullet will deal
   bullet.speed = speed --how fast it moves
+  bullet.type = typeB
   table.insert(bullets, bullet) --add the bullet to the bullets table
   collider:addToGroup(bullets, bullet.shape) --bullets don't collide with other bullets (also shield)
 end
