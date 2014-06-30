@@ -3,13 +3,13 @@ EN = require 'enemies'
 PA = require 'player'
 LV = require 'level'
 BU = require 'bullets'
+SL = require 'SaveLoad'
 
 function love.load()
   loadLevel()
   loadPlayer()
   loadEnemies()
   loadBullets()
-  
   sTime = love.timer.getTime()
 end
 function love.update(dt)
