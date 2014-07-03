@@ -3,7 +3,7 @@ EN = require 'enemies'
 PA = require 'player'
 LV = require 'level'
 BU = require 'bullets'
-SL = require 'SaveLoad'
+LB = require 'levelbuilder'
 
 function love.load()
   loadLevel()
@@ -15,7 +15,6 @@ end
 function love.update(dt)
   collider:update(dt) --sets world in motion
   cTime = love.timer.getTime() - sTime
-  
   updatePlayer(dt)
   updateEnemies(dt)
   updateBullets(dt)
