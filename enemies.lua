@@ -9,29 +9,33 @@ function updateEnemies(dt)
       table.remove(enemies, i)
     end
     if v.hp <= 0 then
+      v.onDeath(v.x, v.y)
       table.remove(enemies, i)
     end
-    if v.nextShot <= love.timer.getTime() and v.n % v.p ~= 0 then
+    if v.nextShot <= cTime and v.n % v.p ~= 0 then
       local enShot = v.bullet
       createBullet(v.x, v.y, enShot.size, enShot.speed, enShot.damage, enShot.type[1]) --then the shoot function will be called
       table.insert(v.bullet.type, v.bullet.type[1])
       table.remove(v.bullet.type, 1)
-      v.nextShot = love.timer.getTime() + v.rate
+      v.nextShot = cTime + v.rate
       v.n = v.n + 1 --accumulates
-    elseif v.nextShot <= love.timer.getTime() and v.n % v.p == 0 then
+    elseif v.nextShot <= cTime and v.n % v.p == 0 then
       v.n = 1
-      v.nextShot = love.timer.getTime() + v.rate
+      v.nextShot = cTime + v.rate
     end
     local move = v.movement[1]
     moveEnemy(v.shape, move.move, v.speed, dt)
-    if move.switch + v.time <= love.timer.getTime() then
-      v.time = love.timer.getTime()
+    if move.switch + v.time <= cTime then
+      v.time = cTime
       if move.brake then
         table.remove(v.movement, 1)
       elseif not move.brake then
         table.insert(v.movement, v.movement[1])
         table.remove(v.movement, 1)
       end
+    end
+    if v.y > 600 then
+      table.remove(enemies, i)
     end
   end
   for k,v in pairs(enemiesSpawn) do
@@ -41,7 +45,7 @@ function updateEnemies(dt)
       elseif v.typeE == "mine" then
         spawnEnemyMine(v.x, v.y)
       elseif v.typeE == "mach" then
-        spawnEnemyMach(v.x)
+        spawnEnemyMach(v.x, v.y)
       end
       v.c = false
     end 
@@ -61,18 +65,21 @@ function spawnEnemySquare(x, y)
   test.shape = collider:addRectangle(x, y, 30, 30)  --enemies shape
   test.hp = 50 --health
   test.damage = 25
-  test.time = love.timer.getTime()
+  test.time = cTime
   test.movement = {{move = "dl", switch = 1.0, brake = false},{move = "dr", switch =  1.0, brake = false}}
   test.speed = 50 --speed at which the enemy moves
   test.rate = 0.25 --time between bullets in seconds
   test.n = 1 --accumulator for test.p to function
   test.p = 4 --defines that the 4th bullet will be negated
-  test.nextShot = love.timer.getTime() + test.rate --first 'ghost' bullet, yet to be fired
+  test.nextShot = cTime + test.rate --first 'ghost' bullet, yet to be fired
   test.bullet = {}
   test.bullet.damage = 50 
   test.bullet.size = 5
   test.bullet.speed = 300
   test.bullet.type = {"unblock", "basic", "basic"}
+  test.onDeath = function(xPos, yPos)
+    spawnPowerUp(xPos, yPos, "health")
+  end
   table.insert(enemies, test)
   collider:addToGroup(enemies, test.shape)
 end
@@ -81,7 +88,7 @@ function spawnEnemyMine(x, y)
     y = 0
   end
   local mine = {} --just creating the mine now
-  mine.time = love.timer.getTime()
+  mine.time = cTime
   mine.shape = collider:addCircle(x, y, 10) --twice the size of a bullet
   mine.hp = 1 --if it hits something, it dies
   mine.movement = {{move = "d", switch = 1, brake = false}, {move = "u", switch = 0.25, brake = false}} --floating effect
@@ -96,6 +103,9 @@ function spawnEnemyMine(x, y)
   mine.bullet.size = 0
   mine.bullet.speed = 0
   mine.bullet.type = {"basic"}
+  mine.onDeath = function(xPos, yPos)
+    spawnPowerUp(xPos, yPos, "charge")
+  end
   table.insert(enemies, mine)
   collider:addToGroup(enemies, mine.shape)
 end
@@ -104,7 +114,7 @@ function spawnEnemyMach(x, y)
     y = 0
   end
   local mach = {} --machine gun enemy, should move down until a point, then left-right
-  mach.time = love.timer.getTime()
+  mach.time = cTime
   mach.shape = collider:addPolygon(x, y, x + 10, y - 30, x - 10, y - 30)
   mach.hp = 25 -- easy to kill
   mach.movement = {{move = "d", switch = 4, brake = true}, {move = "l", switch = 2, brake = false},{move = "r", switch = 2, brake = false},{move = "r", switch = 2, brake = false},{move = "l", switch = 2, brake = false}} --just down for now
@@ -113,12 +123,18 @@ function spawnEnemyMach(x, y)
   mach.damage = 25
   mach.n = 1
   mach.p = 7
-  mach.nextShot = love.timer.getTime() + mach.rate
+  mach.nextShot = cTime + mach.rate
   mach.bullet = {}
   mach.bullet.damage = 25
   mach.bullet.size = 3.5
   mach.bullet.speed = 400
   mach.bullet.type = {"basic"} 
+  mach.onDeath = function (xPos, yPos)
+    local chance = math.random(1, 5)
+    if chance == 5 then
+      spawnPowerUp(xPos, yPos, "health")
+    end
+  end
   table.insert(enemies, mach)
   collider:addToGroup(enemies, mach.shape)
 end
