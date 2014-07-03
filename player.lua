@@ -1,5 +1,6 @@
+shipTypes = {"basic", "cherryBomb"}
 function loadPlayer()
-  if typeP == "basic" then
+  if typeP == "basic" or typeP == nil then
    ship = {} -- everying about our ship
    ship.bullets = {} --stores bullets stolen
    ship.bullets.dummy = "dummy" --dummy varible so that the table is populated
@@ -24,16 +25,16 @@ function loadPlayer()
    ship.bullets.dummy = "dummy" --dummy varible so that the table is populated
    ship.shots = {}
    ship.shape =  collider:addPolygon(400, 500, 390, 515, 410, 515)--creates our triangular ship
-   ship.speed = 350 --ship speed
-   ship.charge = 100 --starting charge
-   ship.sCharge = 100
+   ship.speed = 400 --ship speed
+   ship.charge = 10 --starting charge
+   ship.sCharge = 10
    ship.hp = 150 --starting health
    ship.sHp = 150
    ship.shield = {} --holds all information about our shield
    ship.shield.isVisible = true --holds wheather or not our shield should be visible
    ship.shield.shape = collider:addCircle(400, 515, 60) --creates the shield, it's always there
    ship.shield.depleteRate = 100
-   ship.shield.recharge = 100
+   ship.shield.recharge = 200
    ship.shield.capacity = 100
    ship.death = false
    collider:addToGroup(ship, ship.shape, ship.shield.shape) --shield doesn't collide with ship

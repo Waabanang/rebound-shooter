@@ -1,27 +1,55 @@
 HC = require 'hardoncollider' --basic importing
 EN = require 'enemies'
 PA = require 'player'
-LV = require 'level'
+LV = require 'levels'
 BU = require 'bullets'
 SL = require 'SaveLoad'
+LF = require 'loveframes'
+GU = require 'gui'
 
 function love.load()
-  loadLevel()
-  loadPlayer()
-  loadEnemies()
-  loadBullets()
-  sTime = love.timer.getTime()
+  love.graphics.setBackgroundColor(0, 0, 0) --sets background color to black
+  love.window.setMode(800, 600) --screen size 800x600
+  collider = HC(100, on_collide) --no idea, really... basic setup
+  typeP = "basic"
+  mainmenu()
+  play = false
+  timePaused = 0
 end
 function love.update(dt)
   collider:update(dt) --sets world in motion
-  cTime = love.timer.getTime() - sTime
-  
-  updatePlayer(dt)
-  updateEnemies(dt)
-  updateBullets(dt)
+  if play then
+    cTime = love.timer.getTime() - sTime - timePaused
+    updatePlayer(dt)
+    updateEnemies(dt)
+    updateBullets(dt)
+  end
+  loveframes.update(dt)
+end
+function love.draw() 
+  if play then
+    drawPlayer()
+    drawBullets()
+    drawEnemies()
+  end
+  loveframes.draw()
 end
 function love.keypressed(key)
   keyPlayer(key)
+  if key == "escape" and play then
+    pTime = love.timer.getTime()
+    pausemenu()
+  end
+  loveframes.keypressed(key)
+end
+function love.keyreleased(key)
+  loveframes.keyreleased(key)
+end
+function love.mousepressed(x, y, button)
+  loveframes.mousepressed(x, y, button)
+end
+function love.mousereleased(x, y, button)
+  loveframes.mousereleased(x, y, button)
 end
 function on_collide(dt, shape_a, shape_b) --collision callback
   for i,v in ipairs(bullets) do --all bullet collisions
@@ -79,9 +107,13 @@ function on_collide(dt, shape_a, shape_b) --collision callback
       end
     end
   end
-end
-function love.draw() 
-  drawPlayer()
-  drawBullets()
-  drawEnemies()
+  for i,v in ipairs(powerUps) do
+    if shape_a == v.shape and shape_b == ship.shape then
+      v.effect()
+      table.remove(powerUps, i)
+    elseif shape_a == ship.shape and shape_b == v.shape then
+      v.effect()
+      table.remove(powerUps, i)
+    end
+  end
 end
