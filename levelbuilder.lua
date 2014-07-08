@@ -11,9 +11,7 @@ function loadBuilder()
     love.filesystem.newFile("testlevel.lua")
     love.filesystem.write("testlevel.lua", "{}")
   end
-  local function testLevel()
-    return love.filesystem.load("testlevel.lua")
-  end
+  TL = love.filesystem.load("testlevel.lua")()
   enemiesSpawn = testLevel()
   timeChange = "pause"
   cTime = love.timer.getTime()
@@ -33,11 +31,11 @@ function updateBuilder(dt)
   local cx, cy = love.mouse.getPosition()
   if checkClass() == "class 1" then
     enemiesCreate.y = 10
-    if cx >= 50 and cx <= 850 then
+    if cx >= 50 and cx <= 850 th  en
       enemiesCreate.x = cx
     elseif cx < 50 then
       enemiesCreate.x = 50
-    elseif cy > 850 then
+    elseif cx > 850 then
       enemiesCreate.x = 850
     end
     if enemiesCreate.typeE == "square" then
@@ -45,7 +43,7 @@ function updateBuilder(dt)
     elseif enemiesCreate.typeE == "mine" then
       enemiesCreate.shape = collider:addCircle(enemiesCreate.x, 20, 10)
     elseif enemiesCreate.typeE == "mach" then
-      enemiesCreate.shape = collider:addPolygon( 0.667 * enemiesCreate.x, 0, 0.667 * enemeisCreate.x + 6.67, 45, 0.667 * enemiesCreate.x - 6.67, 5)
+      enemiesCreate.shape = collider:addPolygon(0.667 * enemiesCreate.x, 0, 0.667 * enemeisCreate.x + 6.67, 45, 0.667 * enemiesCreate.x - 6.67, 5)
     end
   end
   updateEnemiesB(dt)
@@ -76,7 +74,7 @@ function keyBuilder(key)
   end
   if key == "a" then
     enemiesCreate.typeE = "mach"
-    enemiesCreate.shape = collider:addPolygon(enemiesCreate.x, 15, enemiesCreate.x + 10, enemiesCreate.y - 30, enemiesCreate.x - 10, enemiesCreate.y - 30)
+    enemiesCreate.shape = collider:addPolygon(0.667 * enemiesCreate.x, 0, 0.667 * enemeisCreate.x + 6.67, 45, 0.667 * enemiesCreate.x - 6.67, 5)
   end
   if key == "f" then
     timeChange = "forward"
@@ -100,8 +98,15 @@ function drawBuilder()
   love.graphics.setColor(255, 0, 255)
   enemiesCreate.shape:draw("fill")
   for i,v in ipairs(enemiesSpawn) do
-    for ke,ve in pairs(enemiesSpawn[i]) do
-      v.shape:draw("fill")
+    if v.c and v.t >= cTime - 2 then
+      if v.typeE == "square" then
+        local shape = collider:addRectangle(v.x, 15 30, 30)
+      elseif v.typeE == "mine" then
+        local shape = collider:addCircle(v.x, 20, 10)
+      elseif v.typeE == "mach" then
+        local shape = collider:addPolygon(0.667 * enemiesCreate.x, 0, 0.667 * enemeisCreate.x + 6.67, 45, 0.667 * enemiesCreate.x - 6.67, 5)
+      end
+      shape:draw("fill")
     end
   end
   drawEnemiesB()
