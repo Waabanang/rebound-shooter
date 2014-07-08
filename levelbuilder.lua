@@ -1,20 +1,35 @@
-EN = require "enemies"
 function loadBuilder()
+  BE = require 'builderenememies'
+  love.window.setMode(900, 700)
+  love.graphics.setBackgroundColor(0, 0, 0)
+  collider = HC(100, on_collide)
   enemiesCreate = {}
   enemiesCreate.t = 0
   enemiesCreate.TypeE = "square"
-  enemiesCreate.c = true
+  enemiesCreate.shape = collider:addRectangle(0, 10, 30, 30)
   if not love.filesystem.exists("testlevel.lua") then
     love.filesystem.newFile("testlevel.lua")
-    love.filesystems.write("testlevel.lua", "{}")
+    love.filesystem.write("testlevel.lua", "{}")
   end
-  enemiesSpawn = love.filesystem.load("testlevel.lua")
+  local function testLevel()
+    return love.filesystem.load("testlevel.lua")
+  end
+  enemiesSpawn = testLevel()
   timeChange = "pause"
   cTime = love.timer.getTime()
   love.mouse.setVisible(false)
+  loadEnemiesB()
 end
 function updateBuilder(dt)
-  collider:update(dt)
+  if timeChange == "forward" then
+    cTime = cTime + dt
+    dTime = dt
+  elseif timeChange == "backward" then
+    cTime = cTime - dt
+    dTime = -dt
+  else
+    dTime = 0
+  end
   local cx, cy = love.mouse.getPosition()
   if checkClass() == "class 1" then
     enemiesCreate.y = 10
@@ -23,40 +38,17 @@ function updateBuilder(dt)
     elseif cx < 50 then
       enemiesCreate.x = 50
     elseif cy > 850 then
-      enemiesCreate.x = 820
+      enemiesCreate.x = 850
     end
     if enemiesCreate.typeE == "square" then
-      enemiesCreate.shape = collider:addRectangle(enemiesCreate.x, enemiesCreate.y, 30, 30)
+      enemiesCreate.shape = collider:addRectangle(enemiesCreate.x, 10, 30, 30)
     elseif enemiesCreate.typeE == "mine" then
-      enemiesCreate.shape = collider:addCircle(x, y, 10)
+      enemiesCreate.shape = collider:addCircle(enemiesCreate.x, 20, 10)
     elseif enemiesCreate.typeE == "mach" then
-      enemiesCreate.shape = collider:addPolygon(x, y, x + 10, y - 30, x - 10, y - 30)
+      enemiesCreate.shape = collider:addPolygon( 0.667 * enemiesCreate.x, 0, 0.667 * enemeisCreate.x + 6.67, 45, 0.667 * enemiesCreate.x - 6.67, 5)
     end
   end
-  if timeChange == "forward" then
-    cTime = cTime + dt
-    updateEnemies()
-  end
-  if timeChange == "backward" then
-    cTime = cTime - dt
-    for i,v in ipairs(enemiesSpawn) do
-      if v.c == false and v.t >= cTime then
-        v.c = true
-      end
-    end
-  end
-  for k,v in pairs(enemiesSpawn) do
-    if v.c and cTime >= v.t then
-      if v.typeE == "square" then
-        spawnEnemySquare(v.x, v.y)
-      elseif v.typeE == "mine" then
-        spawnEnemyMine(v.x, v.y)
-      elseif v.typeE == "mach" then
-        spawnEnemyMach(v.x)
-      end
-      v.c = false
-    end 
-  end
+  updateEnemiesB(dt)
 end
 function checkClass()
   if enemiesCreate.typeE == "square" or enemiesCreate.typeE == "mine" or enemiesCreate.typeE == "mach" then
@@ -76,12 +68,15 @@ end
 function keyBuilder(key)
   if key == "s" then
     enemiesCreate.typeE = "square"
+    enemiesCreate.shape = collider:addRectangle(enemiesCreate.x, 15, 30, 30)
   end
   if key == "m" then
     enemiesCreate.typeE = "mine"
+    enemiesCreate.shape = collider:addCircle(enemiesCreate.x, 20, 10)
   end
   if key == "a" then
     enemiesCreate.typeE = "mach"
+    enemiesCreate.shape = collider:addPolygon(enemiesCreate.x, 15, enemiesCreate.x + 10, enemiesCreate.y - 30, enemiesCreate.x - 10, enemiesCreate.y - 30)
   end
   if key == "f" then
     timeChange = "forward"
@@ -109,4 +104,5 @@ function drawBuilder()
       v.shape:draw("fill")
     end
   end
+  drawEnemiesB()
 end
