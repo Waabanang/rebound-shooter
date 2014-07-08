@@ -64,11 +64,11 @@ function updateEnemiesB(dTime)
   end
 end
 function drawEnemiesB()
-    love.graphics.setColor(255, 0, 255) --magenta enemies
-    for i,v in ipairs(enemies) do
-      v[1].shape:draw("fill")
-    end
+  love.graphics.setColor(255, 0, 255) --magenta enemies
+  for i,v in ipairs(enemies) do
+    v[1].shape:draw("fill")
   end
+end
 function spawnEnemy(x, y, typeE)
   local test = {}
   test.time = love.timer.getTime()

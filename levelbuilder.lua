@@ -1,5 +1,6 @@
+BE = require 'builderenememies'
+
 function loadBuilder()
-  BE = require 'builderenememies'
   love.window.setMode(900, 700)
   love.graphics.setBackgroundColor(0, 0, 0)
   collider = HC(100, on_collide)
@@ -29,9 +30,9 @@ function updateBuilder(dt)
     dTime = 0
   end
   local cx, cy = love.mouse.getPosition()
-  if checkClass() == "class 1" then
+  if checkClass() == "class 1" then --change
     enemiesCreate.y = 10
-    if cx >= 50 and cx <= 850 th  en
+    if cx >= 50 and cx <= 850 then
       enemiesCreate.x = cx
     elseif cx < 50 then
       enemiesCreate.x = 50
