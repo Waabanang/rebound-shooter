@@ -3,7 +3,6 @@ EN = require 'enemies'
 PA = require 'player'
 LV = require 'levels'
 BU = require 'bullets'
-SL = require 'SaveLoad'
 LF = require 'loveframes'
 GU = require 'gui'
 
