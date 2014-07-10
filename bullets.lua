@@ -1,76 +1,125 @@
 function loadBullets()
   bullets = {} --holds all non-friendly bullets
-  bullets.fuck = "fuck" --dummy varible
   powerUps = {}
 end
 function updateBullets(dt)
-  for i,v in ipairs(bullets) do 
-    v.shape:move(0, v.speed*dt) --bullets go down
-    if cTime-v.time > 3 then
-      table.remove(bullets, i) --deletes bullets that have been around for three seconds
+  for i,v in ipairs(bullets) do
+    v.x, v.y = v.shape:center()
+    bullets.move(i, v.x, v.y)  -- bullets move function, moves bullets
+    if v.x > 800 or v.x < 0 or v.y > 600 or v.y < 0 then
+      table.remove(bullets, i)
+    end
+    if v.time >= cTime then
+      v.afterTime(i, v.x, v.y)  -- calls after-time to check if a time based effect needs to be called
+    end
+  end
+  for i,v in ipairs(ship.shots) do
+    v.x, v.y = v.shape:center()
+    bullets.move(i, v.x, v.y)  -- bullets move function, moves bullets
+    if v.x > 800 or v.x < 0 or v.y > 600 or v.y < 0 then
+      table.remove(bullets, i)
+    end
+    if v.time >= cTime then
+      v.afterTime(i, v.x, v.y)  -- calls after-time to check if a time based effect needs to be called
     end
   end
   for i,v in ipairs(powerUps) do 
-    v.shape:move(0, 50*dt) --bullets go down
-    if cTime-v.time > 5 then
-      table.remove(bullets, i) --deletes bullets that have been around for three seconds
+    v.x, v.y = v.shape:center()
+    v.move(i, v.x, v.y)  -- moves the powerups
+    if v.time >= cTime then
+      v.afterTime(i, v.x, v.y)  -- calls after-time to check if a time based effect needs to be called
     end
   end
 end
 function drawBullets()
-  love.graphics.setColor(255, 255, 255)--white bullets
-  for i,v in ipairs(bullets) do --draws all bullets
-    if v.type == "unblock" then
-      love.graphics.setColor(255, 0, 0)
-    else
-      love.graphics.setColor(255, 255, 255)
-    end
-    v.shape:draw("fill")
+  for i,v in ipairs(bullets) do -- draws all bullets
+    v.draw(i, v.x, v.y)  -- call the bullets[i].draw function, draws bullets
   end
-  love.graphics.setColor(255, 255, 255)--white bullets
-  for i,v in ipairs(ship.shots) do --draws all bullets shot by ship
-    v.shape:draw("fill")
+  for i,v in ipairs(ship.shots) do
+    v.draw(i, v.x, v.y)
   end
   for i,v in ipairs(powerUps) do --draws all bullets
-    if v.type == "health" then
-      love.graphics.setColor(0, 255, 0)
-    elseif v.type == "charge" then
-      love.graphics.setColor(255, 255, 0)
-    end
-    v.shape:draw("fill")
+    v.draw{i, v.x, v.y)
   end
 end
-function createBullet(startX, startY, size, speed, damage, typeB) --shoot function, five varibles
-  local bullet = {}
-  bullet.time = cTime --records how long the bullet has been around
-  bullet.shape = collider:addCircle(startX, startY, size) --creates the bullets shape
-  bullet.damage = damage --how much damage that bullet will deal
-  bullet.speed = speed --how fast it moves
-  bullet.type = typeB
-  table.insert(bullets, bullet) --add the bullet to the bullets table
-  collider:addToGroup(bullets, bullet.shape) --bullets don't collide with other bullets (also shield)
+function createBullet(x, y, typeB, tbl)  -- tbl is table to add to
+  local test = {}
+  test.typeB = typeB
+  if typeB == "basic" then
+    test.shape = collider:addCircle(x, y, 5)  -- creates the bullets shape
+    test.move = function(i, x, y, dt)
+      tbl[i].shape:move(0, 70 * dt)
+    end
+    test.onCollide = function(i)
+      return "damage", 15  -- how much damage that bullet will deal
+      table.remove(tbl, i)
+    end
+    test.draw = function(i)
+      tbl[i].shape:draw("fill")
+    end
+    test.afterTime = function(i, xPos, yPos) end
+  elseif typeB == "unblock" then
+    test.shape = collider:addCircle(x, y, 3)  -- creates the bullets shape
+    test.move = function(i, x, y, dt)
+      tbl[i].shape:move(0, 100 * dt)
+    end
+    test.onCollide = function(i)
+      return "damage", 7  -- how much damage that bullet will deal
+      table.remove(tbl, i)
+    end
+    test.draw = function(i)
+      tbl[i].shape:draw("fill")
+    end
+    test.afterTime = function(i, xPos, yPos) end
+  elseif typeB - "blank" then
+    break
+  end
+  test.time = cTime + 5  -- records when bullet needs to be destroyed
+  table.insert(tbl, test)
+  collider:addToGroup(tbl, test.shape)
 end
-function spawnPowerUp(startX, startY, typeOf)
+function spawnPowerUp(x, y, typeP)
   local powerup = {}
-  powerup.time = cTime
-  powerup.shape = collider:addCircle(startX, startY, 5)
-  powerup.type = typeOf
-  if typeOf == "health" then
-    powerup.effect = function()
-      if ship.sHp - ship.hp < 50 then
-        ship.hp = ship.sHp
-      else
-        ship.hp = ship.hp + 50
+  test.typeP = typeP
+  if typeP == "health" then
+    test.shape = collider:addCircle(x, y, 5)
+    test.draw = function(i)
+      if enemies[i].time - 2 < cTime or math.floor(0.1: enemies[i].time - cTime) % 0.3 ~= 0 then
+        love.graphics.setColor(0, 255, 0)
+        powerUps[i].shape:draw("fill")
       end
+    end
+    test.move = function(i, x, y, dt)
+      powerUps[i].shape:move(0, 30 * dt)
+    end
+    test.onCollide = function(i)
+      if ship.hpStart - ship.hp >= 50 then
+        ship.hp = ship.hp + 50
+      else
+        ship.hp = ship.hpStart
+      end
+      table.remove(powerUps, i)
     end
   elseif typeOf == "charge" then
-    powerup.effect = function()
-      if ship.sCharge - ship.charge < 70 then
-        ship.charge = ship.sCharge
-      else
-        ship.charge = ship.charge + 70
+    test.shape = collider:addRectangle(x, y, 4, 4)
+    test.draw = function(i)
+      if powerUps[i].time - 2 < cTime or math.floor(0.1: powerUps[i].time - cTime) % 0.3 ~= 0 then
+        love.graphics.setColor(0, 255, 0)
+        powerUps[i].shape:draw("fill")
       end
     end
+    test.move = function(i, x, y, dt)
+      powerUps[i].shape:move(0, 30 * dt)
+    end
+    test.onCollide = function(i)
+      if ship.chargeStart - ship.charge > 70 then
+        ship.chargeStart = ship.chargeStart + 50
+      else
+        ship.charge = ship.chargeStart
+      end
+      table.remove(powerUps, i)
+    end
   end
-  table.insert(powerUps, powerup)
+  test.time = cTime + 5
+  table.insert(powerUps, test)
 end

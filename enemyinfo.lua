@@ -1,7 +1,7 @@
-function refEnemy(typeEn)  -- typeE cannont be used here
+function refEnemy(typeE)
   local ref = {}  -- define local ref
-  ref.typeE = typeEn  -- type of enemy
-  if typeEn == "square" then  -- if "square" enemies ...
+  ref.typeE = typeE  -- type of enemy
+  if typeE == "square" then  -- if "square" enemies ...
     ref.hp = 50  -- hp not variable on movement, equal to 50pts
     ref.onDeath = function(ie, x, y)  -- on-death method
       areaEffect(x, y, "fire", 25)  -- call area-effect function, type fire, deal 25 damage
@@ -12,9 +12,10 @@ function refEnemy(typeEn)  -- typeE cannont be used here
     for i = 1, 2, 1 do  -- repeat loop twice
       -- same data here used for all movement[i]s--
       local test = {} -- define local test, to add data into ref.movement[n]
-      test.shape = function(ie, x, y)  -- shape method
+      test.shape = collider:addRectangle(x, y, 30, 30)
+      test.draw = function(ie)  -- shape method
         love.graphics.setColor(255, 0, 255)
-        collider:addRectangle(x, y, 30, 30):draw("fill")  -- "square" shape
+        enemies[ie].movement[1].shape:draw("fill")  -- "square" shape
       end
       test.switch = 1.0  -- time until movement[i+1]
       test.onSwitch = function(ie, x, y) end  -- no on switch action
@@ -32,7 +33,7 @@ function refEnemy(typeEn)  -- typeE cannont be used here
       enemies[ie].movement[1].shape:move(40 * dt, 40 * dt)  -- down, right, 40 px/sec, will be in movement[1] when called
     end
   end
-  if typeEn == "mine" then  -- if it's a mine
+  if typeE == "mine" then  -- if it's a mine
     ref.hp = 1  -- hp not variable on movement, instant kills
     ref.onDeath = function(ie, x, y)  -- on-death method
       spawnPowerUp(x, y, "charge")  -- spawn charge
@@ -43,9 +44,10 @@ function refEnemy(typeEn)  -- typeE cannont be used here
     for i = 1, 2, 1 do  -- repeat loop twice
       -- same data here used twice --
       local test = {} -- define local test, to add data into ref.movement[n]
-      test.shape = function (ie, x, y)  -- shape method
+      test.shape = collider:addCircle(x, y, 10)
+      test.draw = function (ie)  -- shape method
         love.graphics.setColor(255, 0, 255)  -- magenta enemy
-        collider:addCircle(x, y, 10):draw("fill")  -- "mine" shape, it's a samll circle
+        enemies[ie].movement[1].shape:draw("fill")  -- "mine" shape, it's a samll circle
       end
       test.onSwitch = function(ie, x, y) end  -- no method on-switch
       test.onColide = function(ie, x, y)  -- on-colide method
@@ -65,7 +67,7 @@ function refEnemy(typeEn)  -- typeE cannont be used here
     end
     ref.movement[2].switch = 0.25  -- movement[2] switch after quarter second
   end
-  if typeEn == "mach" then  -- if it's a "mach"
+  if typeE == "mach" then  -- if it's a "mach"
     ref.hp = 25
     ref.onDeath = function(ie, x, y)
       local chance = math.random(1, 5)  -- generate random integer betweeen 1 and 5
@@ -83,9 +85,10 @@ function refEnemy(typeEn)  -- typeE cannont be used here
     for i = 1, 3, 1 do  -- repeat loop 3 times
       -- same data here used for each movement[i] --
       local test = {}
-      test.shape = function(ie, x, y)  -- shape method
+      test.shape = collider:addPolygon(x, y, x + 10, y - 30, x - 10, y -30)
+      test.draw = function(ie)  -- shape method
         love.graphics.setColor(255, 0, 255)
-        collider:addPolygon(x, y, x + 10, y - 30, x - 10, y -30):draw("fill")  -- "mach" shape
+        enemies[ie].movement[1].shape:draw("fill")  -- "mach" shape
       end
       test.onSwitch = function(ie, x, y) end  -- no on switch action
       test.onColide = function(ie, x, y)  -- on-colide method

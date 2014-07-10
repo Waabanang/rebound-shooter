@@ -14,8 +14,8 @@ function updateEnemies(dt)  -- main update function
       table.remove(enemies, i)  -- delete enemy
     end
     if v.nextShot <= cTime then  -- if it's time for the next shot
-      createBullet(v.x, v.y, move.bullet[1].typeB)  -- shoot function will be called
-      table.insert(move.bullet, move.bullet[1])  -- cylce bullets
+      createBullet(v.x, v.y, move.bullet[1].typeB, bullets)  -- shoot function will be called, bullet added to bullets dictonary
+      table.insert(move.bullet, move.bullet[1])  -- cycle bullets
       table.remove(move.bullet, 1)
       v.nextShot = v.nextShot + move.bullet[1].rate
     end
@@ -40,7 +40,7 @@ function updateEnemies(dt)  -- main update function
   end
 end
 function drawEnemies(dt)
-    for i,v in ipairs(enemies) do
-      v.movement[1].shape(i, v.x, v.y)  -- call enemy draw method
-    end
+  for i,v in ipairs(enemies) do
+    v.movement[1].draw(i, v.x, v.y)  -- call enemy draw method
   end
+end
