@@ -1,159 +1,46 @@
 function loadEnemies()
-  enemies = {} --holds all on screen enemies
-  enemies.dummy = "dummy"
+  EI = require 'enemyinfo'  -- load (and run) enemyinfo.lua
+  enemies = {}  -- holds all on screen enemies
  end
-function updateEnemies(dt)
+function updateEnemies(dt)  -- main update function
   for i,v in ipairs(enemies) do
     v.x, v.y = v.shape:center() --same as above, but for our test enemies
-    if v.y > 601 then
-      table.remove(enemies, i)
-    end
     if v.hp <= 0 then
-      v.onDeath(v.x, v.y)
-      table.remove(enemies, i)
+      v.onDeath(i, v.x, v.y)  -- call on-death method
     end
-    if v.nextShot <= cTime and v.n % v.p ~= 0 then
-      local enShot = v.bullet
-      createBullet(v.x, v.y, enShot.size, enShot.speed, enShot.damage, enShot.type[1]) --then the shoot function will be called
-      table.insert(v.bullet.type, v.bullet.type[1])
-      table.remove(v.bullet.type, 1)
-      v.nextShot = cTime + v.rate
-      v.n = v.n + 1 --accumulates
-    elseif v.nextShot <= cTime and v.n % v.p == 0 then
-      v.n = 1
-      v.nextShot = cTime + v.rate
+    local move = v.movement[1]  -- copy movement data to local move for convinence
+    move.move(i, v.x, v.y, dt)  -- call move method
+    if v.y > 600 or v.y < 0 or v.x > 800 or v.x < 0 then  -- if outside room
+      table.remove(enemies, i)  -- delete enemy
     end
-    local move = v.movement[1]
-    moveEnemy(v.shape, move.move, v.speed, dt)
-    if move.switch + v.time <= cTime then
-      v.time = cTime
-      if move.brake then
-        table.remove(v.movement, 1)
-      elseif not move.brake then
-        table.insert(v.movement, v.movement[1])
-        table.remove(v.movement, 1)
-      end
+    if v.nextShot <= cTime then  -- if it's time for the next shot
+      createBullet(v.x, v.y, move.bullet[1].typeB, bullets)  -- shoot function will be called, bullet added to bullets dictonary
+      table.insert(move.bullet, move.bullet[1])  -- cycle bullets
+      table.remove(move.bullet, 1)
+      v.nextShot = v.nextShot + move.bullet[1].rate
     end
-    if v.y > 600 then
-      table.remove(enemies, i)
+    if v.nextMove <= cTime then  -- if it's time for the next movement
+      table.insert(v,movement, move)  -- add the current to the end of list
+      table.remove(v.movement, 1)  -- remove it from the begining, now a new movement is movement[1]
+      v.movement[1].onSwitch(i, v.x, v.y)  -- call the on-switch method
+      v.nextMove = v.nextMove + v.movement[1].switch  -- next move set
     end
   end
   for k,v in pairs(enemiesSpawn) do
-    if v.c and cTime >= v.t then
-      if v.typeE == "square" then
-        spawnEnemySquare(v.x, v.y)
-      elseif v.typeE == "mine" then
-        spawnEnemyMine(v.x, v.y)
-      elseif v.typeE == "mach" then
-        spawnEnemyMach(v.x, v.y)
-      end
-      v.c = false
+    if v.c and cTime >= v.t then  -- if the enemy hasn't spawned yet, and it's time
+      local ref = refEnemey(v.typeE)  -- reference info about this type of enemy
+      ref.x = v.x  -- position
+      ref.y = v.y
+      ref.nextMove = v.t + ref.movement[1].switch  -- next movement change
+      ref.nextShot = v.t + ref.movement[1].bullet[1].rate  -- next bullet to fire
+      table.insert(enemies, ref)  -- actually create enemy
+      enemies[#enemies].onSpawn(#enemies, v.x, v.y)  -- call on spawn method
+      v.c = false  -- mark as spawned
     end 
   end
 end
 function drawEnemies(dt)
-    love.graphics.setColor(255, 0, 255) --magenta enemies
-    for i,v in ipairs(enemies) do
-      v.shape:draw("fill")
-    end
-  end
-function spawnEnemySquare(x, y)
-  if y == nil then
-    y = 0
-  end
-  local test = {} --simple test enemy
-  test.shape = collider:addRectangle(x, y, 30, 30)  --enemies shape
-  test.hp = 50 --health
-  test.damage = 25
-  test.time = cTime
-  test.movement = {{move = "dl", switch = 1.0, brake = false},{move = "dr", switch =  1.0, brake = false}}
-  test.speed = 50 --speed at which the enemy moves
-  test.rate = 0.25 --time between bullets in seconds
-  test.n = 1 --accumulator for test.p to function
-  test.p = 4 --defines that the 4th bullet will be negated
-  test.nextShot = cTime + test.rate --first 'ghost' bullet, yet to be fired
-  test.bullet = {}
-  test.bullet.damage = 50 
-  test.bullet.size = 5
-  test.bullet.speed = 300
-  test.bullet.type = {"unblock", "basic", "basic"}
-  test.onDeath = function(xPos, yPos)
-    spawnPowerUp(xPos, yPos, "health")
-  end
-  table.insert(enemies, test)
-  collider:addToGroup(enemies, test.shape)
-end
-function spawnEnemyMine(x, y)
-  if y == nil then
-    y = 0
-  end
-  local mine = {} --just creating the mine now
-  mine.time = cTime
-  mine.shape = collider:addCircle(x, y, 10) --twice the size of a bullet
-  mine.hp = 1 --if it hits something, it dies
-  mine.movement = {{move = "d", switch = 1, brake = false}, {move = "u", switch = 0.25, brake = false}} --floating effect
-  mine.speed = 40 -- will edit later to scroll speed * 1.25
-  mine.damage = 50 -- only from collision
-  mine.nextShot = 0
-  mine.rate = 0
-  mine.n = 1
-  mine.p = 1
-  mine.bullet = {}
-  mine.bullet.damage = 0 
-  mine.bullet.size = 0
-  mine.bullet.speed = 0
-  mine.bullet.type = {"basic"}
-  mine.onDeath = function(xPos, yPos)
-    spawnPowerUp(xPos, yPos, "charge")
-  end
-  table.insert(enemies, mine)
-  collider:addToGroup(enemies, mine.shape)
-end
-function spawnEnemyMach(x, y)
-  if y == nil then
-    y = 0
-  end
-  local mach = {} --machine gun enemy, should move down until a point, then left-right
-  mach.time = cTime
-  mach.shape = collider:addPolygon(x, y, x + 10, y - 30, x - 10, y - 30)
-  mach.hp = 25 -- easy to kill
-  mach.movement = {{move = "d", switch = 4, brake = true}, {move = "l", switch = 2, brake = false},{move = "r", switch = 2, brake = false},{move = "r", switch = 2, brake = false},{move = "l", switch = 2, brake = false}} --just down for now
-  mach.speed = 50
-  mach.rate = 0.1
-  mach.damage = 25
-  mach.n = 1
-  mach.p = 7
-  mach.nextShot = cTime + mach.rate
-  mach.bullet = {}
-  mach.bullet.damage = 25
-  mach.bullet.size = 3.5
-  mach.bullet.speed = 400
-  mach.bullet.type = {"basic"} 
-  mach.onDeath = function (xPos, yPos)
-    local chance = math.random(1, 5)
-    if chance == 5 then
-      spawnPowerUp(xPos, yPos, "health")
-    end
-  end
-  table.insert(enemies, mach)
-  collider:addToGroup(enemies, mach.shape)
-end
-function moveEnemy(shape, dir, speed, dt)
-  if dir == "l" then
-   shape:move(-speed*dt, 0)
-  elseif dir == "r" then
-   shape:move(speed*dt, 0)
-  elseif dir == "d" then
-   shape:move(0, speed*dt)
-  elseif dir == "u" then
-   shape:move(0, -speed*dt)
-  elseif dir == "dr" then
-   shape:move(speed*dt, speed*dt)
-  elseif dir == "dl" then
-   shape:move(-speed*dt, speed*dt)
-  elseif dir == "ur" then
-   shape:move(speed*dt, -speed*dt)
-  elseif dir == "dl" then
-   shape:move(-speed*dt, -speed*dt)
+  for i,v in ipairs(enemies) do
+    v.movement[1].draw(i, v.x, v.y)  -- call enemy draw method
   end
 end
