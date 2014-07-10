@@ -1,0 +1,9 @@
+revise bullets to fire at different rates, but same size, speed, and damage for types
+move speed, shape, damage, onDeath() and bulllet information to the enemies[i].movement loop
+remove ref.typeE
+define ref {typeE = typeEn}
+ref.movement.bullets = {type, time}
+ref.movement when first change method (put brake here)
+ref on death method
+when spawn method
+ref.movement move to method, (normal px per second)
