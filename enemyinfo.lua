@@ -59,7 +59,7 @@ function refEnemy(typeE, x, y)
       shape:move(0, -50 * dt)
     end
     ref.movement[2].switch = 0.25  -- movement[2] switch after quarter second
-    ref.movement[1].onSwitch = function(ie, x, y) end  -- no method on-switch
+    ref.movement[2].onSwitch = function(ie, x, y) end  -- no method on-switch
   end
   if typeE == "mach" then  -- if it's a "mach"
     ref.hp = 25
@@ -93,7 +93,7 @@ function refEnemy(typeE, x, y)
     ref.movement[1].onSwitch = function(ie, x, y) -- override movement[1] onSwitch
       table.insert(enemies[ie].movement, enemies[ie].movement[1])  -- replaces brake
       table.remove(enemies[ie].movement, 1)
-      enemies[ie].onSwitch(ie, x, y) -- call on-switch for new movement specs
+      --enemies[ie].onSwitch(ie, x, y) -- call on-switch for new movement specs
     end
     ref.movement[2].move = function(ie, shape, dt)  -- move method for movement[2]
       shape:move(25 * dt, 0)
