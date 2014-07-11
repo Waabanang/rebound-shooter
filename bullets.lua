@@ -5,7 +5,7 @@ end
 function updateBullets(dt)
   for i,v in ipairs(bullets) do
     v.x, v.y = v.shape:center()
-    bullets.move(i, v.x, v.y)  -- bullets move function, moves bullets
+    v.move(i, v.x, v.y, dt)  -- bullets move function, moves bullets
     if v.x > 800 or v.x < 0 or v.y > 600 or v.y < 0 then
       table.remove(bullets, i)
     end
@@ -15,7 +15,7 @@ function updateBullets(dt)
   end
   for i,v in ipairs(ship.shots) do
     v.x, v.y = v.shape:center()
-    bullets.move(i, v.x, v.y)  -- bullets move function, moves bullets
+    v.move(i, v.x, v.y)  -- bullets move function, moves bullets
     if v.x > 800 or v.x < 0 or v.y > 600 or v.y < 0 then
       table.remove(bullets, i)
     end
@@ -39,60 +39,59 @@ function drawBullets()
     v.draw(i, v.x, v.y)
   end
   for i,v in ipairs(powerUps) do --draws all bullets
-    v.draw{i, v.x, v.y)
+    v.draw(i, v.x, v.y)
   end
 end
 function createBullet(x, y, typeB, tbl)  -- tbl is table to add to
-  local test = {}
-  test.typeB = typeB
+  local bullet = {}
+  bullet.typeB = typeB
   if typeB == "basic" then
-    test.shape = collider:addCircle(x, y, 5)  -- creates the bullets shape
-    test.move = function(i, x, y, dt)
+    bullet.shape = collider:addCircle(x, y, 5)  -- creates the bullets shape
+    bullet.move = function(i, x, y, dt)
       tbl[i].shape:move(0, 70 * dt)
     end
-    test.onCollide = function(i)
-      return "damage", 15  -- how much damage that bullet will deal
+    bullet.onCollide = function(i)
       table.remove(tbl, i)
+      return "damage", 15  -- how much damage that bullet will deal
     end
-    test.draw = function(i)
+    bullet.draw = function(i)
       tbl[i].shape:draw("fill")
     end
-    test.afterTime = function(i, xPos, yPos) end
+    bullet.afterTime = function(i, xPos, yPos) end
   elseif typeB == "unblock" then
-    test.shape = collider:addCircle(x, y, 3)  -- creates the bullets shape
-    test.move = function(i, x, y, dt)
+    bullet.shape = collider:addCircle(x, y, 3)  -- creates the bullets shape
+    bullet.move = function(i, x, y, dt)
       tbl[i].shape:move(0, 100 * dt)
     end
-    test.onCollide = function(i)
-      return "damage", 7  -- how much damage that bullet will deal
+    bullet.onCollide = function(i)
       table.remove(tbl, i)
+      return "damage", 7  -- how much damage that bullet will deal
     end
-    test.draw = function(i)
+    bullet.draw = function(i)
       tbl[i].shape:draw("fill")
     end
-    test.afterTime = function(i, xPos, yPos) end
-  elseif typeB - "blank" then
-    break
+    bullet.afterTime = function(i, xPos, yPos) 
+    end
   end
-  test.time = cTime + 5  -- records when bullet needs to be destroyed
-  table.insert(tbl, test)
-  collider:addToGroup(tbl, test.shape)
+  bullet.time = cTime + 5  -- records when bullet needs to be destroyed
+  table.insert(tbl, bullet)
+  collider:addToGroup(tbl, bullet.shape)
 end
 function spawnPowerUp(x, y, typeP)
   local powerup = {}
-  test.typeP = typeP
+  powerup.typeP = typeP
   if typeP == "health" then
-    test.shape = collider:addCircle(x, y, 5)
-    test.draw = function(i)
-      if enemies[i].time - 2 < cTime or math.floor(0.1: enemies[i].time - cTime) % 0.3 ~= 0 then
+    powerup.shape = collider:addCircle(x, y, 5)
+    powerup.draw = function(i)
+      if powerUps[i].time - 2 < cTime or math.floor(10 * (powerUps[i].time - cTime)) % 2 ~= 0 then
         love.graphics.setColor(0, 255, 0)
         powerUps[i].shape:draw("fill")
       end
     end
-    test.move = function(i, x, y, dt)
+    powerup.move = function(i, x, y, dt)
       powerUps[i].shape:move(0, 30 * dt)
     end
-    test.onCollide = function(i)
+    powerup.onCollide = function(i)
       if ship.hpStart - ship.hp >= 50 then
         ship.hp = ship.hp + 50
       else
@@ -101,17 +100,17 @@ function spawnPowerUp(x, y, typeP)
       table.remove(powerUps, i)
     end
   elseif typeOf == "charge" then
-    test.shape = collider:addRectangle(x, y, 4, 4)
-    test.draw = function(i)
-      if powerUps[i].time - 2 < cTime or math.floor(0.1: powerUps[i].time - cTime) % 0.3 ~= 0 then
+    powerup.shape = collider:addRectangle(x, y, 4, 4)
+    powerup.draw = function(i)
+      if powerUps[i].time - 2 < cTime or math.floor(10 * (powerUps[i].time - cTime)) % 2 ~= 0 then
         love.graphics.setColor(0, 255, 0)
         powerUps[i].shape:draw("fill")
       end
     end
-    test.move = function(i, x, y, dt)
+    powerup.move = function(i, x, y, dt)
       powerUps[i].shape:move(0, 30 * dt)
     end
-    test.onCollide = function(i)
+    powerup.onCollide = function(i)
       if ship.chargeStart - ship.charge > 70 then
         ship.chargeStart = ship.chargeStart + 50
       else
@@ -120,6 +119,6 @@ function spawnPowerUp(x, y, typeP)
       table.remove(powerUps, i)
     end
   end
-  test.time = cTime + 5
-  table.insert(powerUps, test)
+  powerup.time = cTime + 5
+  table.insert(powerUps, powerup)
 end
