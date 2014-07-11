@@ -42,6 +42,9 @@ function updateEnemies(dt)  -- main update function
     end 
   end
 end
+function areaEffect(x, y, typeA, dmg)
+  
+end
 function drawEnemies(dt)
   for i,v in ipairs(enemies) do
     v.draw(i, v.x, v.y)  -- call enemy draw method
