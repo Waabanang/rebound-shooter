@@ -46,11 +46,12 @@ function updatePlayer(dt)
   collider:addToGroup(bullets, ship.shield.shape) --shield does not collide with bullets
   collider:addToGroup(enemies, ship.shield.shape)
   if not ship.death then
-   for i,v in pairs(ship.shots) do
-     v.shape:move(0, -v.speed*dt) --bullets go up
-     if love.timer.getTime()-v.time > 3 then
-      table.remove(ship.shots, i) --deletes bullets that have been around for three seconds
-     end
+    for i,v in pairs(ship.shots) do
+      v.x, v.y = v.shape:center()
+      v:move(dt)
+      if v.time >= cTime then
+        v:afterTime(i)
+      end
     end
     if love.keyboard.isDown(" ") and ship.charge > 0 then --when you press space, and the shield has charge, it'll pop up
       ship.charge = ship.charge - ship.shield.depleteRate * dt --depletes charge while up
@@ -116,14 +117,16 @@ function updatePlayer(dt)
  end
 function keyPlayer(key)
   if not ship.death and key == "j" and #ship.bullets > 0 and typeP ~= "cherryBomb" then
-      ship.bullets[1].time = love.timer.getTime()
-      table.insert(ship.shots, ship.bullets[1])
-      table.remove(ship.bullets, 1)
+    ship.bullets[1].move = function(self, dt)
+      self.shape:move(0, -110 * dt)
+    end
+    ship.bullets[1].time = love.timer.getTime()
+    table.insert(ship.shots, ship.bullets[1])
+    table.remove(ship.bullets, 1)
   end
 end
 function drawPlayer()
   if not ship.death then
-    
     if typeP == "basic" then
       love.graphics.setColor(0, 255, 200)--ship and shield color, cyan
     elseif typeP == "cherryBomb" then

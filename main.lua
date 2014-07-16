@@ -53,16 +53,14 @@ end
 function on_collide(dt, shape_a, shape_b) --collision callback
   for i,v in ipairs(bullets) do --all bullet collisions
     if not ship.death and shape_a == v.shape and shape_b == ship.shape then --when a bullet and the ship collide
-      ship.hp = ship.hp - v.damage --bullet reduces health by damage amount
+      v:onCollide(ship, i)
         if typeP == "cherryBomb" then
           ship.bullets = {} --stores bullets stolen
           ship.bullets.dummy = "dummy" --dummy varible so that the table is populated
         end
-      table.remove(bullets, i) --remove the bullet
     elseif not ship.death and shape_b == v.shape and shape_a == ship.shape then --same, just repeated in case of other
-      ship.hp = ship.hp - v.damage
-      table.remove(bullets, i)
-       if typeP == "cherryBomb" then
+      v:onCollide(ship, i)
+        if typeP == "cherryBomb" then
           ship.bullets = {} --stores bullets stolen
           ship.bullets.dummy = "dummy" --dummy varible so that the table is populated
         end
@@ -82,20 +80,18 @@ function on_collide(dt, shape_a, shape_b) --collision callback
   for i,v in ipairs(ship.shots) do --all bullet collisions
     for ie, ve in ipairs(enemies) do
       if not ship.death and shape_a == v.shape and shape_b == ve.shape then --when a bullet and the ship collide
-        ve.hp = ve.hp - v.damage --bullet reduces health by damage amount
-        table.remove(ship.shots, i) --remove the bullet
+        v:onCollide(ve, i)
       elseif not ship.death and shape_b == v.shape and shape_a == ve.shape then --same, just repeated in case of other
-        ve.hp = ve.hp - v.damage
-        table.remove(ship.shots, i)
+        v:onCollide(ve, i)
       end
     end
   end 
   for i,v in ipairs(enemies) do
     if not ship.death and shape_a == v.shape and shape_b == ship.shape then
-      ship.hp = ship.hp - v.damage
+      v:onCollide(ship, i)
       v.hp = v.hp - (#ship.bullets + #ship.shots) * 5
     elseif not ship.death and shape_a == ship.shape and shape_b == v.shape then
-      ship.hp = ship.hp - v.damage
+      v:onCollide(ship, i)
       v.hp = v.hp - (#ship.bullets + #ship.shots) * 5
     end
     if typeP == "cherryBomb" then
@@ -108,11 +104,9 @@ function on_collide(dt, shape_a, shape_b) --collision callback
   end
   for i,v in ipairs(powerUps) do
     if shape_a == v.shape and shape_b == ship.shape then
-      v.effect()
-      table.remove(powerUps, i)
+      v:onCollide(ship, i)
     elseif shape_a == ship.shape and shape_b == v.shape then
-      v.effect()
-      table.remove(powerUps, i)
+      v:onCollide(ship, i)
     end
   end
 end
