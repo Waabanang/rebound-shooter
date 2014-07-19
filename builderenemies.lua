@@ -1,3 +1,4 @@
+--  This file was built to work with the current level builder, however the current levelbuilder is needs to be converted to work with the enemiesinfo file.  No changes should be made to this, as it should be deleted later on --
 function loadEnemiesB()
   enemies = {}
   reference.square = {}

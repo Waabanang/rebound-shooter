@@ -4,16 +4,25 @@ function loadBullets()
 end
 function updateBullets(dt)
   for i,v in ipairs(bullets) do
-    v.x, v.y = v.shape:center()
+    if v.time <= cTime then
+      v:afterTime(i)
+    end
     v:move(dt)  -- bullets move function, moves bullets
+    v.x, v.y = v.shape:center()
   end
   for i,v in ipairs(ship.shots) do
-    v.x, v.y = v.shape:center()
+    if v.time <= cTime then
+      v:afterTime(i)
+    end
     v:move(dt)
-  end
-  for i,v in ipairs(powerUps) do 
     v.x, v.y = v.shape:center()
+  end
+  for i,v in ipairs(powerUps) do
+    if v.time <= cTime then
+      v:afterTime(i)
+    end
     v:move(dt)  -- moves the powerups
+    v.x, v.y = v.shape:center()
   end
 end
 function drawBullets()
@@ -30,29 +39,33 @@ end
 function createBullet(x, y, typeB)  -- self is table to add to
   local bullet = {}
   bullet.typeB = typeB
+  bullet.x = x
+  bullet.y = y
   if typeB == "basic" then
-    bullet.shape = collider:addCircle(x, y, 4)  -- creates the bullets shape
+    bullet.shape = collider:addRectangle(x, y, 3, 6)  -- creates the bullets shape
     bullet.move = function(self, dt)  -- move method for movement[2]
-      self.shape:move(0, 110 * dt)  -- down, right, 40 px/sec, will be in movement[1] when called
+      self.shape:move(0, 150 * dt)  -- down, right, 40 px/sec, will be in movement[1] when called
     end
     bullet.onCollide = function(self, obj, i)
       obj.hp = obj.hp - 20
       table.remove(bullets, i)
     end
     bullet.draw = function(self)
+      love.graphics.setColor(255, 255, 250)  -- off white
       self.shape:draw("fill")
     end
     bullet.afterTime = function(self, i) end
   elseif typeB == "unblock" then
-    bullet.shape = collider:addCircle(x, y, 3)  -- creates the bullets shape
+    bullet.shape = collider:addRectangle(x, y, 2, 7)  -- creates the bullets shape
     bullet.move = function(self, dt)
-      self.shape:move(0, 110 * dt)
+      self.shape:move(0, 200 * dt)
     end
     bullet.onCollide = function(self, obj, i)
       obj.hp = obj.hp - 15
       table.remove(bullets, i)
     end
     bullet.draw = function(self)
+      love.graphics.setColor(255, 0, 0)  -- red
       self.shape:draw("fill")
     end
     bullet.afterTime = function(self, i) end
@@ -64,6 +77,8 @@ end
 function spawnPowerUp(x, y, typeP)
   local powerup = {}
   powerup.typeP = typeP
+  powerup.x = x
+  powerup.y = y
   powerup.afterTime = function(self, i)
     table.remove(powerUps, i)
   end
@@ -76,7 +91,7 @@ function spawnPowerUp(x, y, typeP)
       end
     end
     powerup.move = function(self, dt)
-      self.shape:move(0, 30 * dt)
+      self.shape:move(0, 50 * dt)  -- scrolling speed
     end
     powerup.onCollide = function(self, obj, i)
       if obj.sHp - obj.hp >= 50 then
@@ -86,22 +101,22 @@ function spawnPowerUp(x, y, typeP)
       end
       table.remove(powerUps, i)
     end
-  elseif typeOf == "charge" then
-    powerup.shape = collider:addRectangle(x, y, 4, 4)
+  elseif typeP == "charge" then
+    powerup.shape = collider:addRectangle(x, y, 8, 8)
     powerup.draw = function(self)
       if self.time - 2 > cTime or math.floor(10 * (self.time - cTime)) % 2 ~= 0 then
-        love.graphics.setColor(0, 255, 0)
+        love.graphics.setColor(255, 255, 0)
         self.shape:draw("fill")
       end
     end
     powerup.move = function(self, dt)
-      self.shape:move(0, 30 * dt)
+      self.shape:move(0, 50 * dt)  -- scrolling speed
     end
     powerup.onCollide = function(self, obj, i)
-      if obj.chargeStart - obj.charge > 50 then
-        obj.chargeStart = obj.chargeStart + 50
+      if obj.sCharge - obj.charge > 50 then
+        obj.charge = obj.charge + 50
       else
-        obj.charge = obj.chargeStart
+        obj.charge = obj.sCharge
       end
       table.remove(powerUps, i)
     end

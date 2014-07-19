@@ -1,5 +1,4 @@
 levels = {}
-
 levels.levelA = {
  {t=02, x=400, y = 0, c=true, typeE = "square"},
  {t=10, x=200, y = 0, c=true, typeE = "square"}, 
@@ -23,4 +22,22 @@ levels.levelB = {
  {t=9, x=500, y = 0, c=true, typeE = "mine"},
  {t=9, x=600, y = 0, c=true, typeE = "mine"},
  {t=9, x=700, y = 0, c=true, typeE = "mine"}
- }
+}
+levels.levelC = {
+ {t=2, x=250, y = 0, c=true, typeE = "square"}, 
+ {t=2, x=400, y = 0, c=true, typeE = "square"},
+ {t=2, x=550, y = 0, c=true, typeE = "square"},
+ {t=6, x=250, y = 0, c=true, typeE = "mach"}, 
+ {t=6, x=400, y = 0, c=true, typeE = "mach"}, 
+ {t=6, x=550, y = 0, c=true, typeE = "mach"},
+ {t=10, x=250, y = 0, c=true, typeE = "mine"}, 
+ {t=10, x=400, y = 0, c=true, typeE = "mine"}, 
+ {t=10, x=550, y = 0, c=true, typeE = "mine"}, 
+ {t=15, x=250, y = 0, c=true, typeE = "bomber"}, 
+ {t=15, x=400, y = 0, c=true, typeE = "bomber"}, 
+ {t=15, x=550, y = 0, c=true, typeE = "bomber"}, 
+ {t=20, x=200, y = 0, c=true, typeE = "mine"},
+ {t=21, x=400, y = 0, c=true, typeE = "mach"},
+ {t=22, x=600, y = 0, c=true, typeE = "square"},
+ {t=20, x=800, y = 0, c=true, typeE = "bomber"}
+}

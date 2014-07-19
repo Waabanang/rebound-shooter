@@ -101,7 +101,7 @@ function drawBuilder()
   for i,v in ipairs(enemiesSpawn) do
     if v.c and v.t >= cTime - 2 then
       if v.typeE == "square" then
-        local shape = collider:addRectangle(v.x, 15 30, 30)
+        local shape = collider:addRectangle(v.x, 15, 30, 30)
       elseif v.typeE == "mine" then
         local shape = collider:addCircle(v.x, 20, 10)
       elseif v.typeE == "mach" then

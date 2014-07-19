@@ -4,7 +4,7 @@ function loadEnemies()
  end
 function updateEnemies(dt)  -- main update function
   for i,v in ipairs(enemies) do
-    v.x, v.y = v.shape:center() --same as above, but for our test enemies
+    v.x, v.y = v.shape[1]:center() --same as above, but for our test enemies
     if v.hp <= 0 then
       v:onDeath(i)  -- call on-death method
     end
@@ -17,7 +17,7 @@ function updateEnemies(dt)  -- main update function
       table.insert(v.movement, v.movement[1])  -- add the current to the end of list
       table.remove(v.movement, 1)  -- remove it from the begining, now a new movement is movement[1]
       v.nextMove = v.nextMove + v.movement[1].switch  -- next move set
-      v.movement[1].onSwitch(v)  -- call the on-switch method
+      v.movement[1].onSwitch(v, i)  -- call the on-switch method
     end
     if v.nextShot <= cTime then  -- if it's time for the next shot
       if v.bullets[1].typeB ~= "noshoot" then

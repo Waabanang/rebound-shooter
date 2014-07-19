@@ -112,6 +112,11 @@ function pausemenu()
 	exitButton:SetText("Exit to Menu")
 	exitButton:SetPos(10, 90)
 	exitButton.OnClick = function(object, x, y)
+    for k,v in pairs(levels) do
+      for ie,ve in ipairs(v) do
+        ve.c = true
+      end
+    end
     loveframes.SetState("mainmenu")
 	end
 end
