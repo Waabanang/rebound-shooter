@@ -65,19 +65,19 @@ function on_collide(dt, shape_a, shape_b) --collision callback
           ship.bullets.dummy = "dummy" --dummy varible so that the table is populated
         end
     end
-    if ship.hp > 0 and shape_a == v.shape and shape_b == ship.shield.shape then --when a bullet and the shield collide
+    if ship.hp > 0 and shape_a == v.shape and shape_b == ship.shield.shape and v.type ~= "unblock" then --when a bullet and the shield collide
       if #ship.bullets <= ship.shield.capacity then --if the ship hasn't already stolen ten bullets
+        v.velocity = {x = (math.random() - 0.5) * 100, y = (math.random() - 0.5) * 100}
         v.draw = function(self)
+          love.graphics.setColor(0, 255, 255)
+          self.shape:draw("fill")
           if self.typeB == "basic" then
             love.graphics.setColor(255, 255, 250)
           elseif self.typeB == "unblock" then
-            love.graphics.setColor(245, 0, 0)
+            love.graphics.setColor(255, 0, 0)
           end
-          self.shape:draw("fill")
-          love.graphics.setColor(0, 255, 255)
           self.shape:draw("line")
         end
-        v.velocity = {x = (math.random() - 0.5) * 100, y = (math.random() - 0.5) * 100}
         v.move = function(self, dt)
           self.shape:move(self.velocity.x * dt, self.velocity.y * dt)
           if math.sqrt(((self.x - ship.x) ^ (2)) + ((self.y - ship.y) ^ 2)) > 30 then
@@ -88,18 +88,8 @@ function on_collide(dt, shape_a, shape_b) --collision callback
         table.insert(ship.bullets, v) --add that bullet to the ships
       end
       table.remove(bullets, i) --and remove the bullet those that are being fired
-    elseif ship.hp > 0 and shape_b == v.shape and shape_a == ship.shield.shape then--repeat
+    elseif ship.hp > 0 and shape_b == v.shape and shape_a == ship.shield.shape and v.type ~= "unblock"  then--repeat
       if #ship.bullets <= ship.shield.capacity then
-        v.draw = function(self)
-          if self.typeB == "basic" then
-            love.graphics.setColor(245, 255, 250)
-          elseif self.typeB == "unblock" then
-            love.graphics.setColor(245, 10, 10)
-          end
-          self.shape:draw("fill")
-          love.graphics.setColor(0, 255, 255)
-          self.shape:draw("line")
-        end
         v.velocity = {x = (math.random() - 0.5) * 100, y = (math.random() - 0.5) * 100}
         v.move = function(self, dt)
           self.shape:move(self.velocity.x * dt, self.velocity.y * dt)
@@ -115,18 +105,18 @@ function on_collide(dt, shape_a, shape_b) --collision callback
   end
   for i,v in ipairs(ship.shots) do --all bullet collisions
     for ie, ve in ipairs(enemies) do
-      if ship.hp > 0 and shape_a == v.shape and shape_b == ve.shape[1] then --when a bullet and the ship collide
+      if ship.hp > 0 and shape_a == v.shape and shape_b == ve.shape then --when a bullet and the ship collide
         v:onCollide(ve, i)
-      elseif ship.hp > 0 and shape_b == v.shape and shape_a == ve.shape[1] then --same, just repeated in case of other
+      elseif ship.hp > 0 and shape_b == v.shape and shape_a == ve.shape then --same, just repeated in case of other
         v:onCollide(ve, i)
       end
     end
   end 
   for i,v in ipairs(enemies) do
-    if ship.hp > 0 and shape_a == v.shape[1] and shape_b == ship.shape then
+    if ship.hp > 0 and shape_a == v.shape and shape_b == ship.shape then
       v:onCollide(ship, i)
       v.hp = v.hp - (#ship.bullets + #ship.shots) * 5
-    elseif ship.hp > 0 and shape_a == ship.shape and shape_b == v.shape[1] then
+    elseif ship.hp > 0 and shape_a == ship.shape and shape_b == v.shape then
       v:onCollide(ship, i)
       v.hp = v.hp - (#ship.bullets + #ship.shots) * 5
     end

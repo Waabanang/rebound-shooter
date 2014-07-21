@@ -43,6 +43,7 @@ function loadPlayer()
   end
   ship.charge = ship.sCharge
   ship.hp = ship.sHp
+  ship.time = cTime
   collider:addToGroup(ship, ship.shape, ship.shield.shape) --shield doesn't collide with ship
 end
 function updatePlayer(dt)
@@ -51,6 +52,13 @@ function updatePlayer(dt)
   collider:addToGroup(bullets, ship.shield.shape) --shield does not collide with bullets
   collider:addToGroup(enemies, ship.shield.shape)
   if ship.hp > 0 then
+    for i,v in pairs(ship.shots) do
+      v.x, v.y = v.shape:center()
+      v:move(dt)
+      if v.time >= cTime then
+        v:afterTime(i)
+      end
+    end
     if love.keyboard.isDown(" ") and ship.charge > 0 then --when you press space, and the shield has charge, it'll pop up
       ship.charge = ship.charge - ship.shield.depleteRate * dt --depletes charge while up
       collider:removeFromGroup(bullets, ship.shield.shape) --can collide with bullets while up
@@ -104,16 +112,16 @@ function updatePlayer(dt)
       end
     end
     for i,v in ipairs(ship.bullets) do
-      v:move(dt)
       ship.bullets[i].x, ship.bullets[i].y = ship.bullets[i].shape:center()
+      v:move(dt)
+    end
+    if ship.hp <= 0 and ship.time <= cTime + 2 then
+      ship.bullets = {}
+      ship.time = cTime + 2
     end
   end
-  if ship.hp <= 0 and ship.time == nil then
-    ship.bullets = {}
-    ship.time = cTime + 2
-  elseif ship.hp <= 0 and ship.time <= cTime then
+  if ship.hp <= 0 and ship.time <= cTime then
     loadPlayer()
-    ship.time = nil
   end
  end
 function keyPlayer(key)
@@ -121,7 +129,6 @@ function keyPlayer(key)
     local bullet = ship.bullets[1]
     bullet.velocity = nil
     bullet.shape:move(ship.x - bullet.x, ship.y - bullet.y - 25)
-    bullet.x, bullet.y = bullet.shape:center()
     if bullet.typeB == "basic" then
       bullet.draw = function(self)
         love.graphics.setColor(255, 255, 250)  -- off white
@@ -130,10 +137,6 @@ function keyPlayer(key)
       bullet.move = function(self, dt)
         self.shape:move(0, -150 * dt)
       end
-      bullet.onCollide = function(self, obj, i)
-        obj.hp = obj.hp - 20
-        table.remove(ship.shots, i)
-      end
     elseif bullet.typeB == "unblock" then
       bullet.draw = function(self)
         love.graphics.setColor(255, 0, 0)  -- off white
@@ -141,10 +144,6 @@ function keyPlayer(key)
       end
       bullet.move = function(self, dt)
         self.shape:move(0, -200 * dt)
-      end
-      bullet.onCollide = function(self, obj, i)
-        obj.hp = obj.hp - 15
-        table.remove(ship.shots, i)
       end
     end
     bullet.time = cTime

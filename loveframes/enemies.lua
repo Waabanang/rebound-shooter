@@ -4,19 +4,10 @@ function loadEnemies()
  end
 function updateEnemies(dt)  -- main update function
   for i,v in ipairs(enemies) do
-    v.x, v.y = v.shape[1]:center() --same as above, but for our test enemies
+    v.x, v.y = v.shape:center() --same as above, but for our test enemies
     if v.hp <= 0 then
       v:onDeath(i)  -- call on-death method
     end
-<<<<<<< HEAD
-    local move = v.movement[1]  -- copy movement data to local move for convinence
-    move.move(i, v.shape, dt)  -- call move method
-    if v.x > 800 then  -- if outside room
-      table.remove(enemies, i)  -- delete enemy
-    end
-    if v.nextMove <= cTime then  -- if it's time for the next movement
-      table.insert(v.movement, move)  -- add the current to the end of list
-=======
     v.move = v.movement[1].move
     v:move(dt)  -- call move method
     if v.y > 600 then  -- if outside room
@@ -24,7 +15,6 @@ function updateEnemies(dt)  -- main update function
     end
     if v.nextMove <= cTime then  -- if it's time for the next movement
       table.insert(v.movement, v.movement[1])  -- add the current to the end of list
->>>>>>> pr/12
       table.remove(v.movement, 1)  -- remove it from the begining, now a new movement is movement[1]
       v.nextMove = v.nextMove + v.movement[1].switch  -- next move set
       v.movement[1].onSwitch(v, i)  -- call the on-switch method
@@ -37,23 +27,9 @@ function updateEnemies(dt)  -- main update function
       table.remove(v.bullets, 1)
       v.nextShot = v.nextShot + v.bullets[1].rate
     end
-    if v.nextShot <= cTime then  -- if it's time for the next shot
-      if v.bullets[1].typeB ~= "noshoot" then
-      createBullet(v.x, v.y, v.bullets[1].typeB, bullets)  -- shoot function will be called, bullet added to bullets dictonary
-      end
-      table.insert(v.bullets, v.bullets[1])  -- cycle bullets
-      table.remove(v.bullets, 1)
-      v.nextShot = v.nextShot + v.bullets[1].rate
-    end
   end
   for k,v in pairs(enemiesSpawn) do
     if v.c and cTime >= v.t then  -- if the enemy hasn't spawned yet, and it's time
-<<<<<<< HEAD
-      if v.y == nil then
-        v.y = 0
-      end
-=======
->>>>>>> pr/12
       local ref = refEnemy(v.typeE, v.x, v.y)  -- reference info about this type of enemy
       ref.nextMove = v.t + ref.movement[1].switch  -- next movement change
       ref.nextShot = v.t + ref.bullets[1].rate  -- next bullet to fire
@@ -65,10 +41,6 @@ function updateEnemies(dt)  -- main update function
 end
 function drawEnemies(dt)
   for i,v in ipairs(enemies) do
-<<<<<<< HEAD
-    v.draw(i, v.x, v.y)  -- call enemy draw method
-=======
     v:draw()  -- call enemy draw method
->>>>>>> pr/12
   end
 end
